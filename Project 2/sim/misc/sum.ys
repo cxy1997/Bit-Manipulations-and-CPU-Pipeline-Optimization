@@ -1,0 +1,33 @@
+.pos 0x0
+main:
+    irmovl Stack, %esp		# initialize stack pointer
+    call sum_list
+    halt
+
+# Sample linked list
+.align 4
+ele1:
+    .long  0x00a
+    .long  ele2
+ele2:
+    .long  0x0b0
+    .long  ele3
+ele3:
+    .long  0xc00
+    .long  0
+
+sum_list:
+    irmovl 0, %eax			# initialize sum as zero
+    irmovl ele1, %ebx		# starting address of linked list
+loop:
+    mrmovl (%ebx), %ecx		# acquire a number
+    addl %ecx, %eax			# add it to sum
+    mrmovl 4(%ebx), %ebx	# load next address
+    andl %ebx, %ebx			# if (ebx == 0)
+    je End					# break
+    jmp loop				# looping
+End:
+    ret						# return
+
+.pos 0x100
+Stack:

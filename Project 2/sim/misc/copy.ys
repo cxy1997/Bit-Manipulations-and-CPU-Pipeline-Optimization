@@ -1,0 +1,40 @@
+.pos 0x0
+main:
+    irmovl Stack, %esp		# initialize stack pointer
+    irmovl src, %ebx        # src pointer
+    irmovl dest, %ecx       # dst pointer
+    irmovl 3, %edx          # len
+    call copy_block
+    halt
+
+.align 4
+# Source block
+src:
+    .long 0x00a
+    .long 0x0b0
+    .long 0xc00
+# Destination block
+dest:
+    .long 0x111
+    .long 0x222
+    .long 0x333
+
+copy_block:
+    irmovl 0, %eax          # store the result
+loop:
+    andl %edx, %edx			# if (edx == 0)
+    je End					# return 0
+    mrmovl (%ebx), %edi
+    rmmovl %edi, (%ecx)     # copy
+    xorl %edi, %eax         # xor
+    irmovl 4, %esi
+    addl %esi, %ebx
+    addl %esi, %ecx         # update pointers
+    irmovl 1, %esi
+    subl %esi, %edx         # update len
+    jmp loop
+End:
+    ret						# return
+
+.pos 0x100
+Stack:

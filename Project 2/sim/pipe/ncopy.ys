@@ -1,0 +1,281 @@
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len ints to dst.
+# Return the number of positive ints (>0) contained in src.
+#
+# Group leader:		515030910339	Xiangyu	Chen
+# Group members:	515030910382	Mingran	Peng
+#					515030910216	Yiheng	Zhang
+#
+#	  This program achieves notable accelation by targeting at
+# reducing bubbles as well as branches. Since each bubble or
+# wrongly-predicted branch necessarily leads to a stall and thus
+# increases the CPI, there remains a high priority that on these
+# wasted clock cycles should be placed significant emphisis.
+#	  The bubbles are mainly generated from adjacant memory
+# operations, especially, when a 'mrmovl' is followed by a 'rmmovl'
+# which operates excatly on the same register, a bubble will be
+# formed because only after the former instruction passes its
+# 'Memory' stage will the latter enter its 'Execution' stage.
+# To eliminate this bubble, this program adopts an ingenious
+# approach in which two pairs of read-then-write instructions
+# get mingled, and in each pair, the read operation and write
+# operation are separated. 
+#	  To avoid unnecessary comparisons as well as the branches
+# that followes, this program conducts copy operations in batches
+# of size 16, 8, 4, 2, 1. The primary advantage is that there is no
+# need to update the src, dst and len each time a block is copied.
+# Instead, these variables are updated and compared between the
+# execution of batches. Since they are updated with the batch size,
+# the update frequency is significantly reduced and total clock
+# cycles is further optimized.
+#
+##################################################################
+# Do not modify this portion
+# Function prologue.
+ncopy:	
+	pushl %ebp						# Save old frame pointer
+	rrmovl %esp,%ebp				# Set up new frame pointer
+	pushl %esi						# Save callee-save regs
+	pushl %ebx
+	pushl %edi
+	mrmovl 8(%ebp),%ebx				# src
+	mrmovl 16(%ebp),%edx			# len
+	mrmovl 12(%ebp),%ecx			# dst
+
+##################################################################
+# You can modify this portion
+# Loop header
+S1:									# copy 16 blocks in a row
+	irmovl 0,%eax					# count = 0;
+	iaddl -16, %edx					# edx -= 16;
+	jl S2							# if (edx < 0), goto S2	
+L0:	
+	mrmovl (%ebx), %esi				# read value from memory
+	mrmovl 4(%ebx), %edi			# two blocks each time to avoid bubbles
+	rmmovl %esi, (%ecx)				# store value to memory
+	rmmovl %edi, 4(%ecx)			# still two blocks each time
+	andl %esi, %esi	
+	jle L1 							# if (esi > 0)
+	iaddl 1, %eax					# 	  ++count;
+L1:	
+	andl %edi, %edi
+	jle L2							# if (edi > 0)
+	iaddl 1, %eax					# 	  ++count;
+L2:	
+	mrmovl 8(%ebx), %esi			# All the following are similar to above
+	mrmovl 12(%ebx), %edi
+	rmmovl %esi, 8(%ecx)
+	rmmovl %edi, 12(%ecx)
+	andl %esi, %esi
+	jle L3
+	iaddl 1, %eax
+L3:	
+	andl %edi, %edi
+	jle L4
+	iaddl 1, %eax
+L4:	
+	mrmovl 16(%ebx), %esi
+	mrmovl 20(%ebx), %edi
+	rmmovl %esi, 16(%ecx)
+	rmmovl %edi, 20(%ecx)
+	andl %esi, %esi
+	jle L5
+	iaddl 1, %eax
+L5:	
+	andl %edi, %edi
+	jle L6
+	iaddl 1, %eax
+L6:	
+	mrmovl 24(%ebx), %esi
+	mrmovl 28(%ebx), %edi
+	rmmovl %esi, 24(%ecx)
+	rmmovl %edi, 28(%ecx)
+	andl %esi, %esi
+	jle L7
+	iaddl 1, %eax
+L7:	
+	andl %edi, %edi
+	jle L8
+	iaddl 1, %eax
+L8:	
+	mrmovl 32(%ebx), %esi
+	mrmovl 36(%ebx), %edi
+	rmmovl %esi, 32(%ecx)
+	rmmovl %edi, 36(%ecx)
+	andl %esi, %esi
+	jle L9
+	iaddl 1, %eax
+L9:	
+	andl %edi, %edi
+	jle L10
+	iaddl 1, %eax
+L10:	
+	mrmovl 40(%ebx), %esi
+	mrmovl 44(%ebx), %edi
+	rmmovl %esi, 40(%ecx)
+	rmmovl %edi, 44(%ecx)
+	andl %esi, %esi
+	jle L11
+	iaddl 1, %eax
+L11:	
+	andl %edi, %edi
+	jle L12
+	iaddl 1, %eax
+L12:	
+	mrmovl 48(%ebx), %esi
+	mrmovl 52(%ebx), %edi
+	rmmovl %esi, 48(%ecx)
+	rmmovl %edi, 52(%ecx)
+	andl %esi, %esi
+	jle L13
+	iaddl 1, %eax
+L13:	
+	andl %edi, %edi
+	jle L14
+	iaddl 1, %eax
+L14:	
+	mrmovl 56(%ebx), %esi
+	mrmovl 60(%ebx), %edi
+	rmmovl %esi, 56(%ecx)
+	rmmovl %edi, 60(%ecx)
+	andl %esi, %esi
+	jle L15
+	iaddl 1, %eax
+L15:	
+	andl %edi, %edi
+	jle L16
+	iaddl 1, %eax
+L16:
+	iaddl 64, %ebx
+	iaddl 64, %ecx
+	iaddl -16, %edx
+	jge L0
+S2:
+	iaddl 8, %edx
+	jl S3
+M0:									# copy 8 blocks in a row, if there are less than 16 blocks
+	mrmovl (%ebx), %esi
+	mrmovl 4(%ebx), %edi
+	rmmovl %esi, (%ecx)
+	rmmovl %edi, 4(%ecx)
+	andl %esi, %esi		# val <= 0?
+	jle M1
+	iaddl 1, %eax		# count++
+M1:	
+	andl %edi, %edi
+	jle M2
+	iaddl 1, %eax
+M2:	
+	mrmovl 8(%ebx), %esi
+	mrmovl 12(%ebx), %edi
+	rmmovl %esi, 8(%ecx)
+	rmmovl %edi, 12(%ecx)
+	andl %esi, %esi		# val <= 0?
+	jle M3
+	iaddl 1, %eax		# count++
+M3:	
+	andl %edi, %edi
+	jle M4
+	iaddl 1, %eax
+M4:	
+	mrmovl 16(%ebx), %esi
+	mrmovl 20(%ebx), %edi
+	rmmovl %esi, 16(%ecx)
+	rmmovl %edi, 20(%ecx)
+	andl %esi, %esi		# val <= 0?
+	jle M5
+	iaddl 1, %eax		# count++
+M5:	
+	andl %edi, %edi
+	jle M6
+	iaddl 1, %eax
+M6:	
+	mrmovl 24(%ebx), %esi
+	mrmovl 28(%ebx), %edi
+	rmmovl %esi, 24(%ecx)
+	rmmovl %edi, 28(%ecx)
+	andl %esi, %esi		# val <= 0?
+	jle M7
+	iaddl 1, %eax		# count++
+M7:	
+	andl %edi, %edi
+	jle M8
+	iaddl 1, %eax
+M8:
+	iaddl 32, %ebx
+	iaddl 32, %ecx
+	iaddl -8, %edx
+S3:									# copy 4 blocks in a row, if there are less than 8 blocks
+	iaddl 4, %edx
+	jl S4
+N0:	
+	mrmovl (%ebx), %esi
+	mrmovl 4(%ebx), %edi
+	rmmovl %esi, (%ecx)
+	rmmovl %edi, 4(%ecx)
+	andl %esi, %esi		# val <= 0?
+	jle N1
+	iaddl 1, %eax		# count++
+N1:	
+	andl %edi, %edi
+	jle N2
+	iaddl 1, %eax
+N2:	
+	mrmovl 8(%ebx), %esi
+	mrmovl 12(%ebx), %edi
+	rmmovl %esi, 8(%ecx)
+	rmmovl %edi, 12(%ecx)
+	andl %esi, %esi		# val <= 0?
+	jle N3
+	iaddl 1, %eax		# count++
+N3:	
+	andl %edi, %edi
+	jle N4
+	iaddl 1, %eax	
+N4:
+	iaddl 16, %ebx
+	iaddl 16, %ecx
+	iaddl -4, %edx
+S4:									# copy 2 blocks in a row, if there are less than 4 blocks
+	iaddl 2, %edx
+	jl S5
+O0:	
+	mrmovl (%ebx), %esi
+	mrmovl 4(%ebx), %edi
+	rmmovl %esi, (%ecx)
+	rmmovl %edi, 4(%ecx)
+	andl %esi, %esi		# val <= 0?
+	jle O1
+	iaddl 1, %eax		# count++
+O1:	
+	andl %edi, %edi
+	jle O2
+	iaddl 1, %eax
+O2:
+	iaddl 8, %ebx
+	iaddl 8, %ecx
+	iaddl -2, %edx
+S5:									# copy 1 blocks in a row, if there remains one
+	iaddl 1, %edx
+	jl Done
+P0:	
+	mrmovl (%ebx), %esi
+	rmmovl %esi, (%ecx)
+	andl %esi, %esi		# val <= 0?
+	jle Done
+	iaddl 1, %eax		# count++
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Done:
+	popl %edi               # Restore callee-save registers
+	popl %ebx
+	popl %esi
+	rrmovl %ebp, %esp
+	popl %ebp
+	ret
+##################################################################
+# Keep the following label at the end of your function
+End:
+#/* $end ncopy-ys */

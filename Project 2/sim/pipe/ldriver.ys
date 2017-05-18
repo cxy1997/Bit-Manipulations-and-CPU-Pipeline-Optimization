@@ -1,0 +1,466 @@
+#######################################################################
+# Test for copying block of size 63;
+#######################################################################
+	.pos 0
+main:	irmovl Stack, %esp  	# Set up stack pointer
+	irmovl Stack, %ebp  	# Set up base pointer
+
+	# Set up arguments for copy function and then invoke it
+	irmovl $63, %eax		# src and dst have 63 elements
+	pushl %eax
+	irmovl dest, %eax	# dst array
+	pushl %eax
+	irmovl src, %eax	# src array
+	pushl %eax
+	call ncopy		 
+	halt			# should halt with num nonzeros in %eax
+StartFun:
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len ints to dst.
+# Return the number of positive ints (>0) contained in src.
+#
+# Include your name and ID here.
+#
+# Describe how and why you modified the baseline code.
+#
+##################################################################
+# Do not modify this portion
+# Function prologue.
+ncopy:	pushl %ebp		# Save old frame pointer
+	rrmovl %esp,%ebp	# Set up new frame pointer
+	pushl %esi		# Save callee-save regs
+	pushl %ebx
+	pushl %edi
+	mrmovl 8(%ebp),%ebx	# src
+	mrmovl 16(%ebp),%edx	# len
+	mrmovl 12(%ebp),%ecx	# dst
+
+##################################################################
+  rrmovl %edx, %eax     # count=len
+  irmovl -16, %esi
+  addl %esi, %edx      # len-=16
+  jle Switch            # if len<=0, goto Switch
+# Loop Start
+L0: 
+  mrmovl (%ebx), %esi
+  mrmovl 4(%ebx), %edi
+  rmmovl %esi, (%ecx)
+  rmmovl %edi, 4(%ecx)
+  andl %esi, %esi   # val <= 0?
+  jle L1
+  irmovl 1, %esi
+  addl %esi, %eax   # count++
+L1: 
+  andl %edi, %edi
+  jle L2
+  irmovl 1, %edi
+  addl %edi, %eax
+L2: 
+  mrmovl 8(%ebx), %esi
+  mrmovl 12(%ebx), %edi
+  rmmovl %esi, 8(%ecx)
+  rmmovl %edi, 12(%ecx)
+  andl %esi, %esi   # val <= 0?
+  jle L3
+  irmovl 1, %esi
+  addl %esi, %eax   # count++
+L3: 
+  andl %edi, %edi
+  jle L4
+  irmovl 1, %edi
+  addl %edi, %eax
+L4: 
+  mrmovl 16(%ebx), %esi
+  mrmovl 20(%ebx), %edi
+  rmmovl %esi, 16(%ecx)
+  rmmovl %edi, 20(%ecx)
+  andl %esi, %esi   # val <= 0?
+  jle L5
+  irmovl 1, %esi
+  addl %esi, %eax   # count++
+L5: 
+  andl %edi, %edi
+  jle L6
+  irmovl 1, %edi
+  addl %edi, %eax
+L6: 
+  mrmovl 24(%ebx), %esi
+  mrmovl 28(%ebx), %edi
+  rmmovl %esi, 24(%ecx)
+  rmmovl %edi, 28(%ecx)
+  andl %esi, %esi   # val <= 0?
+  jle L7
+  irmovl 1, %esi
+  addl %esi, %eax   # count++
+L7: 
+  andl %edi, %edi
+  jle L8
+  irmovl 1, %edi
+  addl %edi, %eax
+L8: 
+  mrmovl 32(%ebx), %esi
+  mrmovl 36(%ebx), %edi
+  rmmovl %esi, 32(%ecx)
+  rmmovl %edi, 36(%ecx)
+  andl %esi, %esi   # val <= 0?
+  jle L9
+  irmovl 1, %esi
+  addl %esi, %eax   # count++
+L9: 
+  andl %edi, %edi
+  jle L10
+  irmovl 1, %edi
+  addl %edi, %eax
+L10:  
+  mrmovl 40(%ebx), %esi
+  mrmovl 44(%ebx), %edi
+  rmmovl %esi, 40(%ecx)
+  rmmovl %edi, 44(%ecx)
+  andl %esi, %esi   # val <= 0?
+  jle L11
+  irmovl 1, %esi
+  addl %esi, %eax   # count++
+L11:  
+  andl %edi, %edi
+  jle L12
+  irmovl 1, %edi
+  addl %edi, %eax
+L12:  
+  mrmovl 48(%ebx), %esi
+  mrmovl 52(%ebx), %edi
+  rmmovl %esi, 48(%ecx)
+  rmmovl %edi, 52(%ecx)
+  andl %esi, %esi   # val <= 0?
+  jle L13
+  irmovl 1, %esi
+  addl %esi, %eax   # count++
+L13:  
+  andl %edi, %edi
+  jle L14
+  irmovl 1, %edi
+  addl %edi, %eax
+L14:  
+  mrmovl 56(%ebx), %esi
+  mrmovl 60(%ebx), %edi
+  rmmovl %esi, 56(%ecx)
+  rmmovl %edi, 60(%ecx)
+  andl %esi, %esi   # val <= 0?
+  jle L15
+  irmovl 1, %esi
+  addl %esi, %eax   # count++
+L15:  
+  andl %edi, %edi
+  jle L16
+  irmovl 1, %edi
+  addl %edi, %eax
+L16:
+  irmovl 64, %edi
+  addl %edi, %ebx   # src++
+  addl %edi, %ecx   # dst++
+  andl %edx,%edx    # len > 0?
+  irmovl -16, %edi
+  addl %edi, %edx   # len--
+  jg L0
+# Loop End
+Switch:
+  iaddl $16, %edx       # len+=16
+  addl %edx,%edx        # len*=4
+  addl %edx,%edx
+  mrmovl jmpTable(%edx), %edx    # jump position=4*len+jmpTable
+  pushl %edx            # goto jump position
+  ret
+case16:
+  mrmovl 60(%ebx), %esi # read val from (src + 60)
+  rmmovl %esi, 60(%ecx) # store it to (dst + 60)
+  andl %esi, %esi       # val > 0?
+  jg case15             # if so, goto case15;
+  iaddl $-1, %eax       # count--
+case15:
+  mrmovl 56(%ebx), %esi # read val from (src + 56)
+  rmmovl %esi, 56(%ecx) # store it to (dst + 56)
+  andl %esi, %esi       # val > 0?
+  jg case14             # if so, goto case14;
+  iaddl $-1, %eax       # count--
+case14:
+  mrmovl 52(%ebx), %esi # read val from (src + 52)
+  rmmovl %esi, 52(%ecx) # store it to (dst + 52)
+  andl %esi, %esi       # val > 0?
+  jg case13             # if so, goto case13;
+  iaddl $-1, %eax       # count--
+case13:
+  mrmovl 48(%ebx), %esi # read val from (src + 48)
+  rmmovl %esi, 48(%ecx) # store it to (dst + 48)
+  andl %esi, %esi       # val > 0?
+  jg case12             # if so, goto case12;
+  iaddl $-1, %eax       # count--
+case12:
+  mrmovl 44(%ebx), %esi # read val from (src + 44)
+  rmmovl %esi, 44(%ecx) # store it to (dst + 44)
+  andl %esi, %esi       # val > 0?
+  jg case11             # if so, goto case11;
+  iaddl $-1, %eax       # count--
+case11:
+  mrmovl 40(%ebx), %esi # read val from (src + 40)
+  rmmovl %esi, 40(%ecx) # store it to (dst + 40)
+  andl %esi, %esi       # val > 0?
+  jg case10             # if so, goto case10;
+  iaddl $-1, %eax       # count--
+case10:
+  mrmovl 36(%ebx), %esi # read val from (src + 36)
+  rmmovl %esi, 36(%ecx) # store it to (dst + 36)
+  andl %esi, %esi       # val > 0?
+  jg case9              # if so, goto case9;
+  iaddl $-1, %eax       # count--
+case9:
+  mrmovl 32(%ebx), %esi # read val from (src + 32)
+  rmmovl %esi, 32(%ecx) # store it to (dst + 32)
+  andl %esi, %esi       # val > 0?
+  jg case8              # if so, goto case8;
+  iaddl $-1, %eax       # count--
+case8:
+  mrmovl 28(%ebx), %esi # read val from (src + 28)
+  rmmovl %esi, 28(%ecx) # store it to (dst + 28)
+  andl %esi, %esi       # val > 0?
+  jg case7              # if so, goto case7;
+  iaddl $-1, %eax       # count--
+case7:
+  mrmovl 24(%ebx), %esi # read val from (src + 24)
+  rmmovl %esi, 24(%ecx) # store it to (dst + 24)
+  andl %esi, %esi       # val > 0?
+  jg case6              # if so, goto case6;
+  iaddl $-1, %eax       # count--
+case6:
+  mrmovl 20(%ebx), %esi # read val from (src + 20)
+  rmmovl %esi, 20(%ecx) # store it to (dst + 20)
+  andl %esi, %esi       # val > 0?
+  jg case5              # if so, goto case5;
+  iaddl $-1, %eax       # count--
+case5:
+  mrmovl 16(%ebx), %esi # read val from (src + 16)
+  rmmovl %esi, 16(%ecx) # store it to (dst + 16)
+  andl %esi, %esi       # val > 0?
+  jg case4              # if so, goto case4;
+  iaddl $-1, %eax       # count--
+case4:
+  mrmovl 12(%ebx), %esi # read val from (src + 12)
+  rmmovl %esi, 12(%ecx) # store it to (dst + 12)
+  andl %esi, %esi       # val > 0?
+  jg case3              # if so, goto case3;
+  iaddl $-1, %eax       # count--
+case3:
+  mrmovl 8(%ebx), %esi  # read val from (src + 8)
+  rmmovl %esi, 8(%ecx)  # store it to (dst + 8)
+  andl %esi, %esi       # val > 0?
+  jg case2              # if so, goto case2;
+  iaddl $-1, %eax       # count--
+case2:
+  mrmovl 4(%ebx), %esi  # read val from (src + 4)
+  rmmovl %esi, 4(%ecx)  # store it to (dst + 4)
+  andl %esi, %esi       # val > 0?
+  jg case1              # if so, goto case1;
+  iaddl $-1, %eax       # count--
+case1:
+  mrmovl 0(%ebx), %esi  # read val from (src + 0)
+  rmmovl %esi, 0(%ecx)  # store it to (dst + 0)
+  andl %esi, %esi       # val > 0?
+  jg Done               # if so, goto Done;
+  iaddl $-1, %eax       # count--
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Done:
+	popl %edi               # Restore callee-save registers
+	popl %ebx
+	popl %esi
+	rrmovl %ebp, %esp
+	popl %ebp
+	ret
+##################################################################
+#jumptable
+  .align 4
+jmpTable:
+  .long Done
+  .long case1
+  .long case2
+  .long case3
+  .long case4
+  .long case5
+  .long case6
+  .long case7
+  .long case8
+  .long case9
+  .long case10
+  .long case11
+  .long case12
+  .long case13
+  .long case14
+  .long case15
+  .long case16
+##################################################################
+# Keep the following label at the end of your function
+End:
+#/* $end ncopy-ys */
+
+EndFun:
+
+###############################
+# Source and destination blocks 
+###############################
+	.align 4
+src:
+	.long -1
+	.long -2
+	.long -3
+	.long -4
+	.long 5
+	.long -6
+	.long 7
+	.long -8
+	.long -9
+	.long 10
+	.long -11
+	.long -12
+	.long 13
+	.long 14
+	.long -15
+	.long 16
+	.long -17
+	.long -18
+	.long -19
+	.long 20
+	.long -21
+	.long -22
+	.long -23
+	.long 24
+	.long -25
+	.long -26
+	.long 27
+	.long -28
+	.long 29
+	.long 30
+	.long -31
+	.long -32
+	.long 33
+	.long 34
+	.long -35
+	.long 36
+	.long -37
+	.long -38
+	.long -39
+	.long 40
+	.long -41
+	.long 42
+	.long 43
+	.long -44
+	.long -45
+	.long -46
+	.long -47
+	.long -48
+	.long 49
+	.long 50
+	.long -51
+	.long 52
+	.long 53
+	.long 54
+	.long 55
+	.long 56
+	.long 57
+	.long 58
+	.long 59
+	.long 60
+	.long 61
+	.long 62
+	.long 63
+	.long 0xbcdefa # This shouldn't get moved
+
+	.align 16
+Predest:
+	.long 0xbcdefa
+dest:
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+	.long 0xcdefab
+Postdest:
+	.long 0xdefabc
+
+.align 4
+# Run time stack
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+
+Stack:

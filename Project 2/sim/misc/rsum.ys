@@ -1,0 +1,35 @@
+.pos 0x0
+main:
+    irmovl Stack, %esp		# initialize stack pointer
+    irmovl ele1, %ebx       # starting address of linked list
+    call rsum_list
+    halt
+
+# Sample linked list
+.align 4
+ele1:
+    .long  0x00a
+    .long  ele2
+ele2:
+    .long  0x0b0
+    .long  ele3
+ele3:
+    .long  0xc00
+    .long  0
+
+rsum_list:
+    andl %ebx, %ebx			# if (ebx == 0)
+    je End					# return 0
+    mrmovl (%ebx), %eax     # acquire a number
+    pushl %eax              # push into stack
+    mrmovl 4(%ebx), %ebx    # load next address
+    call rsum_list          # resursive function
+    popl %ecx               # retrive the number
+    addl %ecx, %eax         # added to result
+    ret
+End:
+    irmovl 0, %eax          # %eax is used to store the result
+    ret						# return
+
+.pos 0x100
+Stack:
