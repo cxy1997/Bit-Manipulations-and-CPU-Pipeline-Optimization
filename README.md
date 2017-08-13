@@ -1,6 +1,11 @@
 # Computer Architecture
-SJTU CS307 course<br>
-Group member:<br>
-Xiangyu Chen(MasterOfDarkArts)<br>
-Yiheng Zhang(StanwieCB)<br>
-Mingran Peng(Mickeypeng)<br>
+
+SJTU CS307 course
+
+Group members:
+
+- [Xiangyu Chen](https://github.com/cxy1997)
+
+- [Yiheng Zhang](https://github.com/StanwieCB)
+
+- [Mingran Peng](https://github.com/Mickeypeng)
