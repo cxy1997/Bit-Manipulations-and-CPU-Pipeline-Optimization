@@ -1,6 +1,6 @@
 # Computer Architecture
 
-## SJTU CS307 course
+## [SJTU CS307 course](http://www.cs.sjtu.edu.cn/~shen-yy/cs359/)
 
 Group members:
 
